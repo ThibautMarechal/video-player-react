@@ -19,23 +19,25 @@ const rates = [0.25, 0.5, 1, 1.5, 2];
 
 export const VideoPlayer = ({ sources }: Props) => {
   const videoRef = React.useRef<HTMLVideoElement>(null);
-  const [{ playing, duration, rate, currentTime, volume, buffered }, setState] =
-    React.useReducer(
-      (state: State, newState: Partial<State>) => ({
-        ...state,
-        ...newState,
-      }),
-      {
-        playing: false,
-        rate: 1,
-        volume: 1,
-        muted: false,
-        duration: 0,
-        currentTime: 0,
-        waiting: true,
-        buffered: [],
-      },
-    );
+  const [
+    { playing, duration, rate, currentTime, volume, buffered, muted },
+    setState,
+  ] = React.useReducer(
+    (state: State, newState: Partial<State>) => ({
+      ...state,
+      ...newState,
+    }),
+    {
+      playing: false,
+      rate: 1,
+      volume: 1,
+      muted: false,
+      duration: 0,
+      currentTime: 0,
+      waiting: true,
+      buffered: [],
+    },
+  );
 
   return (
     <>
@@ -142,10 +144,23 @@ export const VideoPlayer = ({ sources }: Props) => {
         step={0.01}
         value={volume}
         onChange={(e) => {
-          videoRef.current &&
-            (videoRef.current.volume = e.target.valueAsNumber);
+          if (videoRef.current) {
+            videoRef.current.muted = false;
+            videoRef.current.volume = e.target.valueAsNumber;
+          }
+          setState({ muted: false });
         }}
       />
+      <button
+        onClick={() => {
+          if (videoRef.current) {
+            videoRef.current.muted = !muted;
+          }
+          setState({ muted: !muted });
+        }}
+      >
+        {muted ? "Unmute" : "Mute"}
+      </button>
     </>
   );
 };
