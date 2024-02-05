@@ -12,13 +12,14 @@ type State = {
   duration: number;
   muted: boolean;
   currentTime: number;
+  buffered: Array<[number, number]>;
 };
 
 const rates = [0.25, 0.5, 1, 1.5, 2];
 
 export const VideoPlayer = ({ sources }: Props) => {
   const videoRef = React.useRef<HTMLVideoElement>(null);
-  const [{ playing, duration, rate, currentTime, volume }, setState] =
+  const [{ playing, duration, rate, currentTime, volume, buffered }, setState] =
     React.useReducer(
       (state: State, newState: Partial<State>) => ({
         ...state,
@@ -32,6 +33,7 @@ export const VideoPlayer = ({ sources }: Props) => {
         duration: 0,
         currentTime: 0,
         waiting: true,
+        buffered: [],
       },
     );
 
@@ -39,12 +41,24 @@ export const VideoPlayer = ({ sources }: Props) => {
     <>
       <video
         controls
-        width="500"
+        width={500}
         ref={videoRef}
         onVolumeChange={(e) => setState({ volume: e.currentTarget.volume })}
         onPause={() => setState({ playing: false })}
         onPlaying={() => setState({ playing: true })}
         onRateChange={(e) => setState({ rate: e.currentTarget.playbackRate })}
+        onProgress={(e) => {
+          if (videoRef.current) {
+            const buffered: Array<[number, number]> = [];
+            for (let i = 0; i < e.currentTarget.buffered.length; i++) {
+              buffered.push([
+                e.currentTarget.buffered.start(i),
+                e.currentTarget.buffered.end(i),
+              ]);
+            }
+            setState({ buffered });
+          }
+        }}
         onWaiting={() => setState({ waiting: true })}
         onCanPlayThrough={() => setState({ waiting: false })}
         onLoadedMetadata={(e) =>
@@ -59,6 +73,21 @@ export const VideoPlayer = ({ sources }: Props) => {
       >
         {sources?.map((source) => <source src={source} />)}
       </video>
+      <div style={{ position: "relative", top: 18 }}>
+        {buffered.map(([start, end]) => (
+          <div
+            key={`${start}-${end}`}
+            style={{
+              position: "absolute",
+              left: (start / duration) * 500,
+              width: ((end - start) / duration) * 500,
+              height: 20,
+              backgroundColor: "skyblue",
+              zIndex: -1,
+            }}
+          />
+        ))}
+      </div>
       <br />
       <input
         type="range"
@@ -74,6 +103,7 @@ export const VideoPlayer = ({ sources }: Props) => {
           setState({ currentTime: e.currentTarget.valueAsNumber });
         }}
       />
+      <br />
       <br />
       {playing ? (
         <button onClick={() => videoRef.current?.pause()}>Pause</button>
