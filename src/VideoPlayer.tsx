@@ -12,14 +12,13 @@ type State = {
   duration: number;
   muted: boolean;
   currentTime: number;
-  seekable: Array<[number, number]>;
 };
 
 const rates = [0.25, 0.5, 1, 1.5, 2];
 
 export const VideoPlayer = ({ sources }: Props) => {
   const videoRef = React.useRef<HTMLVideoElement>(null);
-  const [{ playing, duration, rate, currentTime, seekable }, setState] =
+  const [{ playing, duration, rate, currentTime, volume }, setState] =
     React.useReducer(
       (state: State, newState: Partial<State>) => ({
         ...state,
@@ -33,7 +32,6 @@ export const VideoPlayer = ({ sources }: Props) => {
         duration: 0,
         currentTime: 0,
         waiting: true,
-        seekable: [],
       },
     );
 
@@ -46,14 +44,6 @@ export const VideoPlayer = ({ sources }: Props) => {
         onVolumeChange={(e) => setState({ volume: e.currentTarget.volume })}
         onPause={() => setState({ playing: false })}
         onPlaying={() => setState({ playing: true })}
-        onProgress={(e) => {
-          const seekable = e.currentTarget.seekable;
-          const timeRanges: Array<[number, number]> = [];
-          for (let count = 0; count < seekable.length; count++) {
-            timeRanges.push([seekable.start(count), seekable.end(count)]);
-          }
-          setState({ seekable: timeRanges });
-        }}
         onRateChange={(e) => setState({ rate: e.currentTarget.playbackRate })}
         onWaiting={() => setState({ waiting: true })}
         onCanPlayThrough={() => setState({ waiting: false })}
@@ -84,12 +74,6 @@ export const VideoPlayer = ({ sources }: Props) => {
           setState({ currentTime: e.currentTarget.valueAsNumber });
         }}
       />
-      <br />
-      {seekable.map(([start, end], i) => (
-        <div key={i}>
-          {start} - {end}
-        </div>
-      ))}
       <br />
       {playing ? (
         <button onClick={() => videoRef.current?.pause()}>Pause</button>
@@ -126,6 +110,7 @@ export const VideoPlayer = ({ sources }: Props) => {
         min={0}
         max={1}
         step={0.01}
+        value={volume}
         onChange={(e) => {
           videoRef.current &&
             (videoRef.current.volume = e.target.valueAsNumber);
