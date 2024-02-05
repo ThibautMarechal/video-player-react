@@ -1,7 +1,5 @@
-type Props = {
-  src?: string;
-};
+type Props = {};
 
-export const VideoPlayer = ({ src }: Props) => {
-  return <video src={src} />;
+export const VideoPlayer = ({}: Props) => {
+  return <video />;
 };
