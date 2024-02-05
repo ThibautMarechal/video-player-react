@@ -116,7 +116,6 @@ export const VideoPlayer = ({ sources }: Props) => {
             (videoRef.current.volume = e.target.valueAsNumber);
         }}
       />
-      <br />
     </>
   );
 };
