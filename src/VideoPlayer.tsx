@@ -46,7 +46,13 @@ export const VideoPlayer = ({ sources, width = 500 }: Props) => {
         controls
         width={width}
         ref={videoRef}
-        onVolumeChange={(e) => setState({ volume: e.currentTarget.volume })}
+        muted={muted}
+        onVolumeChange={(e) =>
+          setState({
+            volume: e.currentTarget.volume,
+            muted: e.currentTarget.muted,
+          })
+        }
         onPause={() => setState({ playing: false })}
         onPlaying={() => setState({ playing: true })}
         onRateChange={(e) => setState({ rate: e.currentTarget.playbackRate })}
@@ -151,20 +157,12 @@ export const VideoPlayer = ({ sources, width = 500 }: Props) => {
         value={volume}
         onChange={(e) => {
           if (videoRef.current) {
-            videoRef.current.muted = false;
             videoRef.current.volume = e.target.valueAsNumber;
           }
           setState({ muted: false });
         }}
       />
-      <button
-        onClick={() => {
-          if (videoRef.current) {
-            videoRef.current.muted = !muted;
-          }
-          setState({ muted: !muted });
-        }}
-      >
+      <button onClick={() => setState({ muted: !muted })}>
         {muted ? "Unmute" : "Mute"}
       </button>
     </>
