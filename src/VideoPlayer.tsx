@@ -2,6 +2,7 @@ import * as React from "react";
 
 type Props = {
   sources?: Array<string>;
+  width?: number;
 };
 
 type State = {
@@ -17,7 +18,7 @@ type State = {
 
 const rates = [0.25, 0.5, 1, 1.5, 2];
 
-export const VideoPlayer = ({ sources }: Props) => {
+export const VideoPlayer = ({ sources, width = 500 }: Props) => {
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const [
     { playing, duration, rate, currentTime, volume, buffered, muted },
@@ -43,7 +44,7 @@ export const VideoPlayer = ({ sources }: Props) => {
     <>
       <video
         controls
-        width={500}
+        width={width}
         ref={videoRef}
         onVolumeChange={(e) => setState({ volume: e.currentTarget.volume })}
         onPause={() => setState({ playing: false })}
@@ -81,8 +82,8 @@ export const VideoPlayer = ({ sources }: Props) => {
             key={`${start}-${end}`}
             style={{
               position: "absolute",
-              left: (start / duration) * 500,
-              width: ((end - start) / duration) * 500,
+              left: (start / duration) * width,
+              width: ((end - start) / duration) * width,
               height: 20,
               backgroundColor: "skyblue",
               zIndex: -1,
@@ -94,10 +95,15 @@ export const VideoPlayer = ({ sources }: Props) => {
       <input
         type="range"
         min={0}
-        style={{ width: 500 }}
+        style={{ width }}
         max={duration}
         step={1}
         value={currentTime}
+        onPointerMove={(e) => {
+          const domRect = e.currentTarget.getBoundingClientRect();
+          const timePercent = (e.clientX - domRect.x) / width;
+          videoRef.current?.fastSeek?.(duration * timePercent);
+        }}
         onChange={(e) => {
           if (videoRef.current) {
             videoRef.current.currentTime = e.currentTarget.valueAsNumber;
